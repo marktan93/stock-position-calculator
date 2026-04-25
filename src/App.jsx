@@ -27,7 +27,9 @@ function App() {
   const [selectedContractId, setSelectedContractId] = useState(saved.selectedContractId ?? 'MNQ');
   const [budget, setBudget] = useState(saved.budget ?? '');
   const [stopLossValue, setStopLossValue] = useState(saved.stopLossValue ?? '');
-  const [stopLossUnit, setStopLossUnit] = useState(saved.stopLossUnit ?? 'ticks'); // 'ticks' | 'points'
+  const [stopLossUnit, setStopLossUnit] = useState(saved.stopLossUnit ?? 'ticks'); // 'ticks' | 'points' | 'prices'
+  const [entryPrice, setEntryPrice] = useState(saved.entryPrice ?? '');
+  const [stopPrice, setStopPrice] = useState(saved.stopPrice ?? '');
   const [riskValue, setRiskValue] = useState(saved.riskValue ?? '2');
   const [riskUnit, setRiskUnit] = useState(saved.riskUnit ?? 'percent'); // 'percent' | 'usd'
   const [mode, setMode] = useState(saved.mode ?? 'risk');
@@ -37,21 +39,34 @@ function App() {
 
   // Persist to localStorage on every change
   const saveState = useCallback(() => {
-    const state = { selectedContractId, budget, stopLossValue, stopLossUnit, riskValue, riskUnit, mode };
+    const state = { selectedContractId, budget, stopLossValue, stopLossUnit, entryPrice, stopPrice, riskValue, riskUnit, mode };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  }, [selectedContractId, budget, stopLossValue, stopLossUnit, riskValue, riskUnit, mode]);
+  }, [selectedContractId, budget, stopLossValue, stopLossUnit, entryPrice, stopPrice, riskValue, riskUnit, mode]);
 
   useEffect(() => { saveState(); }, [saveState]);
 
+  // Compute points distance from prices
+  const priceDistance = useMemo(() => {
+    const entry = parseFloat(entryPrice);
+    const stop = parseFloat(stopPrice);
+    if (!entry || !stop) return 0;
+    return Math.abs(entry - stop);
+  }, [entryPrice, stopPrice]);
+
   // Convert stop-loss input to ticks regardless of unit
   const stopLossTicks = useMemo(() => {
+    if (!contract) return 0;
+    if (stopLossUnit === 'prices') {
+      if (!priceDistance) return 0;
+      return priceDistance / contract.tickSize;
+    }
     const val = parseFloat(stopLossValue);
-    if (!val || val <= 0 || !contract) return 0;
+    if (!val || val <= 0) return 0;
     if (stopLossUnit === 'points') {
       return val / contract.tickSize;
     }
     return val;
-  }, [stopLossValue, stopLossUnit, contract]);
+  }, [stopLossValue, stopLossUnit, contract, priceDistance]);
 
   // Convert risk input to a dollar amount
   const riskAmount = useMemo(() => {
@@ -231,38 +246,79 @@ function App() {
               </div>
 
               <div className="field">
-                <label htmlFor="stopLoss">Stop-Loss Distance</label>
-                <div className="input-with-toggle">
-                  <input
-                    id="stopLoss"
-                    type="number"
-                    min="0"
-                    step={stopLossUnit === 'ticks' ? '1' : '0.25'}
-                    placeholder={stopLossUnit === 'ticks' ? 'e.g. 20' : 'e.g. 5'}
-                    value={stopLossValue}
-                    onChange={(e) => setStopLossValue(e.target.value)}
-                  />
-                  <div className="unit-toggle">
-                    <button
-                      className={`unit-btn ${stopLossUnit === 'ticks' ? 'active' : ''}`}
-                      onClick={() => setStopLossUnit('ticks')}
-                    >
-                      Ticks
-                    </button>
-                    <button
-                      className={`unit-btn ${stopLossUnit === 'points' ? 'active' : ''}`}
-                      onClick={() => setStopLossUnit('points')}
-                    >
-                      Points
-                    </button>
-                  </div>
+                <label>Stop-Loss Distance</label>
+                <div className="toggle-group triple">
+                  <button
+                    className={`toggle-btn ${stopLossUnit === 'ticks' ? 'active' : ''}`}
+                    onClick={() => setStopLossUnit('ticks')}
+                  >
+                    Ticks
+                  </button>
+                  <button
+                    className={`toggle-btn ${stopLossUnit === 'points' ? 'active' : ''}`}
+                    onClick={() => setStopLossUnit('points')}
+                  >
+                    Points
+                  </button>
+                  <button
+                    className={`toggle-btn ${stopLossUnit === 'prices' ? 'active' : ''}`}
+                    onClick={() => setStopLossUnit('prices')}
+                  >
+                    Prices
+                  </button>
                 </div>
-                {contract && stopLossValue && (
-                  <span className="hint">
-                    {stopLossUnit === 'ticks'
-                      ? `= ${(parseFloat(stopLossValue) * contract.tickSize).toFixed(4)} points`
-                      : `= ${(parseFloat(stopLossValue) / contract.tickSize).toFixed(1)} ticks`}
-                  </span>
+
+                {stopLossUnit === 'prices' ? (
+                  <div className="price-inputs">
+                    <div className="price-field">
+                      <label htmlFor="entryPrice">Entry Price</label>
+                      <input
+                        id="entryPrice"
+                        type="number"
+                        min="0"
+                        step="0.25"
+                        placeholder="e.g. 21500"
+                        value={entryPrice}
+                        onChange={(e) => setEntryPrice(e.target.value)}
+                      />
+                    </div>
+                    <div className="price-field">
+                      <label htmlFor="stopPrice">Stop-Loss Price</label>
+                      <input
+                        id="stopPrice"
+                        type="number"
+                        min="0"
+                        step="0.25"
+                        placeholder="e.g. 21495"
+                        value={stopPrice}
+                        onChange={(e) => setStopPrice(e.target.value)}
+                      />
+                    </div>
+                    {contract && priceDistance > 0 && (
+                      <span className="hint">
+                        Distance: {priceDistance.toFixed(4)} points = {(priceDistance / contract.tickSize).toFixed(1)} ticks
+                      </span>
+                    )}
+                  </div>
+                ) : (
+                  <>
+                    <input
+                      id="stopLoss"
+                      type="number"
+                      min="0"
+                      step={stopLossUnit === 'ticks' ? '1' : '0.25'}
+                      placeholder={stopLossUnit === 'ticks' ? 'e.g. 20' : 'e.g. 5'}
+                      value={stopLossValue}
+                      onChange={(e) => setStopLossValue(e.target.value)}
+                    />
+                    {contract && stopLossValue && (
+                      <span className="hint">
+                        {stopLossUnit === 'ticks'
+                          ? `= ${(parseFloat(stopLossValue) * contract.tickSize).toFixed(4)} points`
+                          : `= ${(parseFloat(stopLossValue) / contract.tickSize).toFixed(1)} ticks`}
+                      </span>
+                    )}
+                  </>
                 )}
               </div>
             </>

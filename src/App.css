@@ -141,6 +141,47 @@
   border-left: 1px solid var(--border);
 }
 
+/* ============ Price inputs (entry/stop) ============ */
+.price-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.price-field label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.price-field input {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 14px;
+  color: var(--text-h);
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.price-field input:focus {
+  border-color: var(--accent);
+}
+
+.price-field input::placeholder {
+  color: #555;
+}
+
+/* Triple toggle (3 buttons) */
+.toggle-group.triple {
+  margin-bottom: 8px;
+}
+
 /* ============ Toggle ============ */
 .toggle-group {
   display: flex;
