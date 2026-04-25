@@ -471,6 +471,32 @@ function App() {
           before trading.
         </p>
       </footer>
+
+      {/* Mobile sticky bottom bar */}
+      {results && (
+        <div className="mobile-sticky-result">
+          <div className="mobile-sticky-inner">
+            <div className="mobile-sticky-count">
+              <span className="mobile-sticky-number">{results.maxContracts}</span>
+              <span className="mobile-sticky-label">
+                {results.mode === 'margin' ? 'Max Contracts' : 'Contracts'}
+              </span>
+            </div>
+            {results.mode === 'risk' && (
+              <div className="mobile-sticky-detail">
+                <span>Risk: {formatCurrency(results.actualRisk)}</span>
+                <span>Margin: {formatCurrency(results.totalMarginRequired)}</span>
+              </div>
+            )}
+            {results.mode === 'margin' && (
+              <div className="mobile-sticky-detail">
+                <span>Margin: {formatCurrency(results.totalMargin)}</span>
+                <span>Left: {formatCurrency(results.remainingBudget)}</span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

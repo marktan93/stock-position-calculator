@@ -408,6 +408,11 @@
   color: var(--text);
 }
 
+/* ============ Mobile Sticky Bar (hidden on desktop) ============ */
+.mobile-sticky-result {
+  display: none;
+}
+
 /* ============ Mobile ============ */
 @media (max-width: 600px) {
   .app {
@@ -602,5 +607,60 @@
     padding: 16px;
     margin-top: 16px;
     font-size: 11px;
+    padding-bottom: 80px;
+  }
+
+  /* Mobile sticky bottom bar */
+  .mobile-sticky-result {
+    display: block;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    background: rgba(22, 24, 35, 0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-top: 1px solid var(--border);
+    padding: 10px 16px;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom));
+  }
+
+  .mobile-sticky-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .mobile-sticky-count {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .mobile-sticky-number {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--text-h);
+    line-height: 1;
+  }
+
+  .mobile-sticky-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--accent-light);
+    font-weight: 600;
+  }
+
+  .mobile-sticky-detail {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+    font-size: 12px;
+    color: var(--text);
   }
 }
