@@ -382,6 +382,10 @@ function App() {
                   smaller than the risk per single contract (
                   {formatCurrency(results.riskPerContract)}). Reduce your
                   stop-loss distance or increase your budget / risk %.
+                  <br /><br />
+                  Max stop-loss for 1 contract:{' '}
+                  <strong>{Math.floor(results.riskAmount / contract.tickValue)} ticks</strong>
+                  {' '}({(Math.floor(results.riskAmount / contract.tickValue) * contract.tickSize).toFixed(4)} points)
                 </div>
               )}
 
