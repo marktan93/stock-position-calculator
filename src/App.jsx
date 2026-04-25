@@ -118,6 +118,7 @@ function App() {
   return (
     <div className="app">
       <header className="header">
+        <img src="/logo.png" alt="Trading Chick" className="header-logo" />
         <h1>Futures Position Calculator</h1>
         <p className="subtitle">
           Calculate how many contracts to trade based on your budget, risk

@@ -10,6 +10,12 @@
   margin-bottom: 32px;
 }
 
+.header-logo {
+  width: 120px;
+  height: auto;
+  margin-bottom: 8px;
+}
+
 .header h1 {
   font-size: 28px;
   font-weight: 700;
