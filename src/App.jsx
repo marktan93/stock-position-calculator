@@ -45,12 +45,19 @@ function App() {
 
   useEffect(() => { saveState(); }, [saveState]);
 
-  // Compute points distance from prices
+  // Compute points distance and direction from prices
   const priceDistance = useMemo(() => {
     const entry = parseFloat(entryPrice);
     const stop = parseFloat(stopPrice);
     if (!entry || !stop) return 0;
     return Math.abs(entry - stop);
+  }, [entryPrice, stopPrice]);
+
+  const tradeDirection = useMemo(() => {
+    const entry = parseFloat(entryPrice);
+    const stop = parseFloat(stopPrice);
+    if (!entry || !stop || entry === stop) return null;
+    return entry > stop ? 'long' : 'short';
   }, [entryPrice, stopPrice]);
 
   // Convert stop-loss input to ticks regardless of unit
@@ -296,9 +303,16 @@ function App() {
                       />
                     </div>
                     {contract && priceDistance > 0 && (
-                      <span className="hint">
-                        Distance: {priceDistance.toFixed(4)} points = {(priceDistance / contract.tickSize).toFixed(1)} ticks
-                      </span>
+                      <div className="price-result">
+                        {tradeDirection && (
+                          <span className={`direction-badge ${tradeDirection}`}>
+                            {tradeDirection === 'long' ? '▲ Long / Buy' : '▼ Short / Sell'}
+                          </span>
+                        )}
+                        <span className="hint">
+                          Distance: {priceDistance.toFixed(4)} points = {(priceDistance / contract.tickSize).toFixed(1)} ticks
+                        </span>
+                      </div>
                     )}
                   </div>
                 ) : (
